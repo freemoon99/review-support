@@ -1,136 +1,564 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>리뷰샷 (ReviewShot) - 체험단 리뷰 전용 구도 카메라</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
-    body, html { width: 100%; height: 100%; background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #fff; overflow: hidden; }
-    
-    #app { display: flex; flex-direction: column; width: 100%; height: 100%; height: 100dvh; position: relative; }
-    
-    /* Top Bar */
-    .top-bar { height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; z-index: 10; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-    .brand { font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; }
-    .brand span { color: #10b981; font-size: 12px; background: rgba(16,185,129,0.2); padding: 2px 6px; border-radius: 4px; }
-    .top-actions { display: flex; gap: 12px; }
-    .icon-btn { background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; padding: 6px; }
-
-    /* Viewfinder Container */
-    .camera-viewport { flex: 1; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #111; }
-    video { width: 100%; height: 100%; object-fit: cover; -webkit-transform: scaleX(1); transform: scaleX(1); }
-    video.front-cam { -webkit-transform: scaleX(-1); transform: scaleX(-1); } /* 전면 카메라 좌우반전 */
-    
-    .camera-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at center, #222 0%, #0a0a0a 100%); text-align: center; padding: 20px; z-index: 1; }
-    .camera-fallback p { color: #888; font-size: 14px; margin-top: 8px; line-height: 1.5; }
-    .start-cam-btn { margin-top: 16px; background: #10b981; color: #fff; border: none; padding: 12px 24px; border-radius: 20px; font-weight: 600; cursor: pointer; font-size: 15px; }
-
-    /* Guide Overlay SVG */
-    .guide-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
-
-    /* Guide Guide Tag */
-    .guide-tip { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; color: #34d399; border: 1px solid rgba(52,211,153,0.3); z-index: 6; pointer-events: none; text-align: center; white-space: nowrap; max-width: 90%; overflow: hidden; text-overflow: ellipsis; }
-
-    /* Bottom Control Area */
-    .bottom-bar { background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 12px 16px env(safe-area-inset-bottom, 28px) 16px; z-index: 10; display: flex; flex-direction: column; gap: 14px; }
-    
-    /* Preset Selector */
-    .preset-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
-    .preset-scroll::-webkit-scrollbar { display: none; }
-    .preset-chip { flex-shrink: 0; padding: 7px 14px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; font-size: 13px; font-weight: 500; color: #ccc; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
-    .preset-chip.active { background: #10b981; color: #000; font-weight: 700; border-color: #10b981; box-shadow: 0 0 12px rgba(16,185,129,0.4); }
-
-    /* Shutter & Gallery Row */
-    .shutter-row { display: flex; justify-content: space-around; align-items: center; }
-    .gallery-preview { width: 44px; height: 44px; border-radius: 8px; background: #222; border: 2px solid #444; overflow: hidden; display: flex; justify-content: center; align-items: center; font-size: 11px; color: #666; cursor: pointer; }
-    .gallery-preview img { width: 100%; height: 100%; object-fit: cover; }
-    
-    .shutter-btn { width: 72px; height: 72px; border-radius: 50%; border: 4px solid #fff; background: transparent; padding: 4px; cursor: pointer; position: relative; }
-    .shutter-inner { width: 100%; height: 100%; border-radius: 50%; background: #fff; transition: transform 0.1s; }
-    .shutter-btn:active .shutter-inner { transform: scale(0.9); background: #10b981; }
-    
-    .counter-badge { width: 44px; height: 44px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 12px; color: #aaa; }
-    .counter-badge strong { font-size: 15px; color: #34d399; }
-
-    /* Flash Toast */
-    .toast { position: absolute; bottom: 180px; left: 50%; transform: translateX(-50%); background: rgba(16,185,129,0.95); color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.3s; z-index: 20; pointer-events: none; text-align: center; }
-    .toast.show { opacity: 1; }
-  </style>
-</head>
-<body>
-  <div id="app">
-    <!-- Top Bar -->
-    <div class="top-bar">
-      <div class="brand">리뷰샷 (ReviewShot) <span>체험단 모드</span></div>
-      <div class="top-actions">
-        <button class="icon-btn" id="flipCamBtn" title="카메라 전환">🔄</button>
-        <button class="icon-btn" id="gridToggleBtn" title="삼분할 격자">📐</button>
-      </div>
-    </div>
-
-    <!-- Viewfinder Area -->
-    <div class="camera-viewport">
-      <video id="video" autoplay playsinline muted></video>
-      
-      <!-- Fallback when camera not accessed -->
-      <div class="camera-fallback" id="fallback">
-        <div style="font-size: 36px; margin-bottom: 8px;">📸</div>
-        <div style="font-size: 16px; font-weight: 600;">실시간 카메라 프리뷰</div>
-        <p>아이폰에서 카메라 권한 허용 후<br>버튼을 눌러 촬영을 시작하세요.</p>
-        <button class="start-cam-btn" id="startCamBtn">카메라 켜기</button>
-      </div>
-
-      <!-- Live Guide Overlay (SVG) -->
-      <svg class="guide-overlay" id="overlaySvg" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <g id="baseGrid" stroke="rgba(255,255,255,0.18)" stroke-width="0.3" stroke-dasharray="1 1">
-          <line x1="33.3" y1="0" x2="33.3" y2="100"/>
-          <line x1="66.6" y1="0" x2="66.6" y2="100"/>
-          <line x1="0" y1="33.3" x2="100" y2="33.3"/>
-          <line x1="0" y1="66.6" x2="100" y2="66.6"/>
-        </g>
-        <g id="presetLayer"></g>
-      </svg>
-
-      <!-- Tip Indicator -->
-      <div class="guide-tip" id="guideTip">📦 1번 컷: 박스/구성품을 중앙 사각틀에 맞추세요</div>
-      <div class="toast" id="toast">✅ 찰칵! 1장 저장 완료</div>
-    </div>
-
-    <!-- Bottom Controls -->
-    <div class="bottom-bar">
-      <!-- Preset Chips Scroll -->
-      <div class="preset-scroll" id="presetScroll">
-        <button class="preset-chip active" data-preset="topview">📦 1. 언박싱 항공샷</button>
-        <button class="preset-chip" data-preset="angle45">✨ 2. 본품 45도 얼짱</button>
-        <button class="preset-chip" data-preset="detail">🔍 3. 제형/디테일 확대</button>
-        <button class="preset-chip" data-preset="usecase">📱 4. 실사용/거치 컷</button>
-        <button class="preset-chip" data-preset="fashion">👕 5. 착용/전신 핏</button>
-      </div>
-
-      <!-- Shutter Row -->
-      <div class="shutter-row">
-        <div class="gallery-preview" id="galleryPreview">
-          <span>사진</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#101714" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <title>리뷰샷 · 제품을 돋보이게</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --green: #a6efc4;
+        --muted: #aab6af;
+        --panel: #19221d;
+        --border: #344139;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #0c110e;
+        color: #f5f8f5;
+        font:
+          15px -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+      button,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.4;
+        cursor: wait;
+      }
+      button:focus-visible,
+      a:focus-visible {
+        outline: 3px solid var(--green);
+        outline-offset: 3px;
+      }
+      #app {
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        max-width: 760px;
+        margin: auto;
+      }
+      .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
+        gap: 10px;
+      }
+      .brand {
+        font-weight: 800;
+        font-size: 20px;
+        letter-spacing: -1px;
+      }
+      .brand small {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 1px;
+        color: var(--muted);
+        font-weight: 400;
+        margin-top: 3px;
+      }
+      .top-actions {
+        display: flex;
+        gap: 6px;
+      }
+      .icon-btn,
+      .secondary {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--panel);
+        padding: 10px 12px;
+        min-height: 44px;
+      }
+      .camera-viewport {
+        flex: 1;
+        min-height: 120px;
+        position: relative;
+        overflow: hidden;
+        background: #172019;
+        margin: 0 10px;
+        border-radius: 20px;
+        isolation: isolate;
+      }
+      video {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        object-fit: cover;
+      }
+      video.front-cam {
+        transform: scaleX(-1);
+      }
+      .camera-fallback {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 24px;
+        background: radial-gradient(ellipse at top, #293c30, #101713);
+      }
+      .camera-fallback p {
+        max-width: 290px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+      .camera-fallback strong {
+        font-size: 22px;
+      }
+      .primary,
+      .start-cam-btn {
+        border: 0;
+        border-radius: 12px;
+        background: var(--green);
+        color: #102719;
+        font-weight: 750;
+        padding: 13px 18px;
+        min-height: 46px;
+      }
+      .guide-overlay {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+      }
+      .guide-tip {
+        position: absolute;
+        top: 14px;
+        left: 12px;
+        right: 12px;
+        z-index: 3;
+        text-align: center;
+        pointer-events: none;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #d9f9e5;
+        text-shadow: 0 1px 4px #000;
+        background: #08100bb3;
+        padding: 8px 10px;
+        border-radius: 12px;
+      }
+      .bottom-bar {
+        padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .section-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 1px;
+      }
+      .text-btn {
+        background: none;
+        border: 0;
+        color: var(--green);
+        padding: 8px;
+        font-size: 13px;
+      }
+      .preset-scroll {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 2px 1px 6px;
+        scrollbar-width: none;
+      }
+      .preset-chip {
+        white-space: nowrap;
+        flex-shrink: 0;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        border-radius: 30px;
+        padding: 11px 14px;
+        color: #cbd5ce;
+      }
+      .preset-chip.active {
+        color: #0d2818;
+        background: var(--green);
+        border-color: var(--green);
+        font-weight: 700;
+      }
+      .shutter-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 12px;
+      }
+      .gallery-preview {
+        width: 58px;
+        height: 58px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--panel);
+        overflow: hidden;
+        padding: 0;
+        font-size: 12px;
+      }
+      .gallery-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .shutter-btn {
+        width: 76px;
+        height: 76px;
+        border: 3px solid #f0f6f1;
+        border-radius: 50%;
+        padding: 5px;
+        background: none;
+      }
+      .shutter-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: #f0f6f1;
+      }
+      .shutter-btn:active .shutter-inner {
+        background: var(--green);
+        transform: scale(0.94);
+      }
+      .shutter-label {
+        width: 58px;
+        color: var(--muted);
+        text-align: center;
+        font-size: 11px;
+        line-height: 1.6;
+      }
+      .toast {
+        position: fixed;
+        bottom: 180px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: max-content;
+        max-width: 90vw;
+        padding: 12px 18px;
+        background: #c9f6db;
+        color: #102719;
+        border-radius: 14px;
+        z-index: 20;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        text-align: center;
+      }
+      .toast.show {
+        opacity: 1;
+      }
+      dialog {
+        width: min(560px, calc(100% - 24px));
+        max-height: 90vh;
+        max-height: 90dvh;
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        background: #121b15;
+        color: #f5f8f5;
+        padding: 20px;
+        overflow: auto;
+      }
+      dialog::backdrop {
+        background: #000b;
+        backdrop-filter: blur(5px);
+      }
+      .dialog-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      h2 {
+        font-size: 21px;
+        margin: 0;
+      }
+      h3 {
+        margin: 18px 0 8px;
+      }
+      p,
+      .tips {
+        line-height: 1.7;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .close {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        min-width: 44px;
+        height: 44px;
+        font-size: 22px;
+      }
+      .example-art {
+        background: #e7eee3;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .example-art svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 240px;
+      }
+      .example-tabs {
+        display: flex;
+        overflow-x: auto;
+        gap: 6px;
+        margin-bottom: 14px;
+        padding-bottom: 4px;
+      }
+      .example-tabs button {
+        flex-shrink: 0;
+        font-size: 12px;
+        padding: 9px 11px;
+      }
+      .example-caption {
+        color: var(--muted);
+        font-size: 11px;
+        margin: 7px 0;
+      }
+      .tips {
+        padding-left: 22px;
+        font-size: 14px;
+      }
+      .wide {
+        width: 100%;
+      }
+      .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .photo-grid button {
+        padding: 0;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .photo-grid img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+      }
+      .photo-grid span {
+        display: block;
+        padding: 6px;
+        font-size: 10px;
+      }
+      .photo-image {
+        width: 100%;
+        max-height: 48vh;
+        object-fit: contain;
+        border-radius: 12px;
+        background: #080d09;
+      }
+      .photo-actions {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+      }
+      .download {
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        color: #e4f8eb;
+      }
+      .warning {
+        color: #ffc5ad;
+      }
+      .empty {
+        padding: 40px 8px;
+        text-align: center;
+        color: var(--muted);
+      }
+      [hidden] {
+        display: none !important;
+      }
+      @media (max-height: 650px) {
+        .brand small {
+          display: none;
+        }
+        .top-bar {
+          padding-top: calc(6px + env(safe-area-inset-top));
+          padding-bottom: 6px;
+        }
+        .bottom-bar {
+          gap: 7px;
+          padding-top: 6px;
+        }
+        .shutter-btn {
+          width: 60px;
+          height: 60px;
+        }
+        .guide-tip {
+          font-size: 11px;
+          top: 8px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="app">
+      <header class="top-bar">
+        <div class="brand">리뷰샷<small>PRODUCT PHOTO GUIDE</small></div>
+        <div class="top-actions">
+          <button class="icon-btn" id="gridToggleBtn" aria-pressed="true">
+            격자</button
+          ><button
+            class="icon-btn"
+            id="flipCamBtn"
+            aria-label="전면·후면 카메라 전환"
+          >
+            전환
+          </button>
         </div>
-        <button class="shutter-btn" id="shutterBtn">
-          <div class="shutter-inner"></div>
+      </header>
+      <section class="camera-viewport" aria-label="카메라 미리보기">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="camera-fallback" id="fallback">
+          <strong>제품을 돋보이게, 한 컷.</strong>
+          <p id="cameraMessage">
+            마음에 드는 테마를 고르고<br />가이드에 맞춰 촬영해 보세요.
+          </p>
+          <button class="start-cam-btn" id="startCamBtn">카메라 켜기</button>
+        </div>
+        <svg
+          class="guide-overlay"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <g
+            id="baseGrid"
+            stroke="rgba(255,255,255,.25)"
+            stroke-width=".3"
+            stroke-dasharray="1 1"
+          >
+            <path d="M33.3 0V100 M66.6 0V100 M0 33.3H100 M0 66.6H100" />
+          </g>
+          <g id="presetLayer"></g>
+        </svg>
+        <div class="guide-tip" id="guideTip"></div>
+      </section>
+      <footer class="bottom-bar">
+        <div class="section-label">
+          <span>촬영 테마</span
+          ><button class="text-btn" id="exampleBtn">구도 예시 보기 ↗</button>
+        </div>
+        <div
+          class="preset-scroll"
+          id="presetScroll"
+          aria-label="촬영 테마"
+        ></div>
+        <div class="shutter-row">
+          <button
+            class="gallery-preview"
+            id="galleryPreview"
+            aria-label="사진 보관함 열기"
+          >
+            보관함</button
+          ><button
+            class="shutter-btn"
+            id="shutterBtn"
+            aria-label="사진 촬영"
+            disabled
+          >
+            <div class="shutter-inner"></div></button
+          ><span class="shutter-label">가이드 없이<br />사진만 저장</span>
+        </div>
+      </footer>
+    </main>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <dialog id="exampleDialog" aria-labelledby="exampleTitle">
+      <div class="dialog-head">
+        <h2 id="exampleTitle">구도 예시</h2>
+        <button class="close" data-close aria-label="예시 닫기">×</button>
+      </div>
+      <div class="example-tabs" id="exampleTabs" aria-label="예시 테마"></div>
+      <div class="example-art" id="exampleArt"></div>
+      <p class="example-caption">구도를 설명하기 위한 일러스트입니다.</p>
+      <h3 id="exampleName"></h3>
+      <ul class="tips" id="exampleTips"></ul>
+      <button class="primary wide" id="useThemeBtn">이 테마로 촬영</button>
+    </dialog>
+    <dialog id="galleryDialog" aria-labelledby="galleryTitle">
+      <div class="dialog-head">
+        <h2 id="galleryTitle">사진 보관함</h2>
+        <button class="close" data-close aria-label="보관함 닫기">×</button>
+      </div>
+      <p class="muted">
+        이 기기·이 앱에 보관됩니다. 중요한 사진은 열어서 사진 앱이나 파일로 따로
+        저장해 주세요. 사이트 데이터 삭제 시 보관함도 삭제됩니다.
+      </p>
+      <p id="storageWarning" class="warning" hidden></p>
+      <div id="photoGrid" class="photo-grid"></div>
+      <p class="empty" id="emptyGallery">아직 촬영한 사진이 없습니다.</p>
+    </dialog>
+    <dialog id="photoDialog" aria-labelledby="photoTitle">
+      <div class="dialog-head">
+        <h2 id="photoTitle">촬영한 사진</h2>
+        <button class="close" data-close aria-label="사진 닫기">×</button>
+      </div>
+      <img class="photo-image" id="photoImage" alt="촬영한 제품 사진" />
+      <p class="muted" id="photoMeta"></p>
+      <p id="photoState" class="muted" role="status"></p>
+      <div class="photo-actions">
+        <button class="primary" id="shareBtn">사진 앱으로 저장 · 공유</button
+        ><a id="downloadBtn" class="secondary download">JPEG 파일 다운로드</a
+        ><button class="secondary" id="retryBtn" hidden>
+          앱 보관함 저장 다시 시도</button
+        ><button class="text-btn warning" id="deleteBtn">
+          보관함에서 삭제
         </button>
-        <div class="counter-badge">
-          <strong id="photoCount">0/5</strong>
-          <span>장 완료</span>
-        </div>
       </div>
-    </div>
-  </div>
-
-  <canvas id="captureCanvas" style="display: none;"></canvas>
-
-  <script>
-    const PRESETS = {
-      topview: {
-        tip: "📦 1번 컷: 박스·구성품을 중앙 사각틀에 맞춰 위에서 내려찍으세요",
-        render: () => `
+      <p class="muted">
+        아이폰: 공유 메뉴의 ‘이미지 저장’을 선택하세요. 다운로드는 파일 앱에
+        저장될 수 있습니다.
+      </p>
+    </dialog>
+    <canvas id="captureCanvas" hidden></canvas>
+    <script>
+      const PRESETS = {
+        topview: {
+          tip: "📦 박스·구성품을 중앙 사각틀에 맞춰 위에서 내려찍으세요",
+          render: () => `
           <rect x="20" y="20" width="60" height="60" rx="3" fill="none" stroke="#34d399" stroke-width="0.8" stroke-dasharray="3 2"/>
           <path d="M 15 25 L 15 15 L 25 15" fill="none" stroke="#fff" stroke-width="0.8"/>
           <path d="M 75 15 L 85 15 L 85 25" fill="none" stroke="#fff" stroke-width="0.8"/>
@@ -138,182 +566,595 @@
           <path d="M 85 75 L 85 85 L 75 85" fill="none" stroke="#fff" stroke-width="0.8"/>
           <line x1="50" y1="46" x2="50" y2="54" stroke="rgba(52,211,153,0.6)" stroke-width="0.5"/>
           <line x1="46" y1="50" x2="54" y2="50" stroke="rgba(52,211,153,0.6)" stroke-width="0.5"/>
-        `
-      },
-      angle45: {
-        tip: "✨ 2번 컷: 제품 정면을 45도 각도 투시선에 맞추고 수평을 잡으세요",
-        render: () => `
+        `,
+        },
+        angle45: {
+          tip: "✨ 제품 정면을 45도 각도 투시선에 맞추고 수평을 잡으세요",
+          render: () => `
           <polygon points="30,30 70,30 80,75 20,75" fill="none" stroke="#34d399" stroke-width="0.8" stroke-dasharray="3 2"/>
           <line x1="10" y1="75" x2="90" y2="75" stroke="#10b981" stroke-width="0.6"/>
           <ellipse cx="50" cy="30" rx="20" ry="6" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="0.6" stroke-dasharray="2 1"/>
           <line x1="30" y1="30" x2="20" y2="75" stroke="rgba(52,211,153,0.5)" stroke-width="0.5"/>
           <line x1="70" y1="30" x2="80" y2="75" stroke="rgba(52,211,153,0.5)" stroke-width="0.5"/>
-        `
-      },
-      detail: {
-        tip: "🔍 3번 컷: 제형·로고·마감 디테일을 원형 포커스 안에 꽉 채우세요",
-        render: () => `
+        `,
+        },
+        detail: {
+          tip: "🔍 제형·로고·마감 디테일을 원형 포커스 안에 꽉 채우세요",
+          render: () => `
           <circle cx="50" cy="50" r="24" fill="none" stroke="#34d399" stroke-width="0.9" stroke-dasharray="3 1.5"/>
           <circle cx="50" cy="50" r="32" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.4"/>
           <line x1="50" y1="20" x2="50" y2="80" stroke="rgba(52,211,153,0.4)" stroke-width="0.4"/>
           <line x1="20" y1="50" x2="80" y2="50" stroke="rgba(52,211,153,0.4)" stroke-width="0.4"/>
           <rect x="15" y="15" width="70" height="70" rx="4" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="0.4"/>
-        `
-      },
-      usecase: {
-        tip: "📱 4번 컷: 손에 쥐거나 책상 배치! 대각선 구도로 실사용감 살리기",
-        render: () => `
+        `,
+        },
+        usecase: {
+          tip: "📱 손에 쥐거나 책상 배치! 대각선 구도로 실사용감 살리기",
+          render: () => `
           <line x1="15" y1="85" x2="65" y2="25" stroke="#34d399" stroke-width="0.8" stroke-dasharray="3 2"/>
           <line x1="65" y1="25" x2="85" y2="85" stroke="rgba(52,211,153,0.5)" stroke-width="0.6"/>
           <ellipse cx="65" cy="35" rx="16" ry="18" fill="none" stroke="#34d399" stroke-width="0.9"/>
           <circle cx="30" cy="70" r="14" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="0.6" stroke-dasharray="2 2"/>
-        `
-      },
-      fashion: {
-        tip: "👕 5번 컷: 머리부터 발끝까지 전신/상반신 실루엣 가이드에 맞추세요",
-        render: () => `
+        `,
+        },
+        fashion: {
+          tip: "👕 머리부터 발끝까지 전신/상반신 실루엣 가이드에 맞추세요",
+          render: () => `
           <ellipse cx="50" cy="22" rx="10" ry="12" fill="none" stroke="#34d399" stroke-width="0.8" stroke-dasharray="2 2"/>
           <line x1="30" y1="36" x2="70" y2="36" stroke="#34d399" stroke-width="0.8"/>
           <rect x="32" y="36" width="36" height="32" fill="none" stroke="rgba(52,211,153,0.6)" stroke-width="0.6" stroke-dasharray="3 2"/>
           <line x1="50" y1="10" x2="50" y2="92" stroke="#10b981" stroke-width="0.5"/>
           <line x1="20" y1="90" x2="80" y2="90" stroke="rgba(255,255,255,0.6)" stroke-width="0.6"/>
-        `
+        `,
+        },
+      };
+
+      const THEMES = {
+        topview: {
+          name: "언박싱 · 항공샷",
+          icon: "📦",
+          tips: [
+            "제품과 구성품을 간격을 두고 배치하세요.",
+            "렌즈를 바닥과 평행하게, 바로 위에서 내려다보세요.",
+            "창가의 부드러운 빛을 쓰고 손 그림자를 피하세요.",
+          ],
+          art: '<rect x="47" y="38" width="130" height="124" rx="5" fill="#cfab7c"/><path d="M47 66H177 M112 38V66" stroke="#9a754c" stroke-width="2"/><rect x="65" y="87" width="94" height="54" rx="3" fill="#f3dfbb"/><rect x="207" y="68" width="48" height="84" rx="12" fill="#517c63"/><rect x="217" y="58" width="28" height="16" rx="3" fill="#213e2b"/><ellipse cx="285" cy="140" rx="15" ry="16" fill="#d4ba8d"/><path d="M32 25H303V179H32Z" fill="none" stroke="#39885e" stroke-dasharray="6 5"/>',
+        },
+        angle45: {
+          name: "제품 · 45도",
+          icon: "✨",
+          tips: [
+            "제품의 정면과 옆면이 함께 보이도록 배치하세요.",
+            "렌즈를 제품보다 살짝 높이고 대각선으로 내려다보세요.",
+            "배경은 단순하게, 제품 주변에는 여백을 남기세요.",
+          ],
+          art: '<path d="M0 146H340" stroke="#c6d3bd"/><ellipse cx="184" cy="161" rx="87" ry="13" fill="#c1cdb7"/><path d="M117 68L197 49L234 74L157 96Z" fill="#8fb09a"/><path d="M117 68L157 96V159L117 130Z" fill="#3f654d"/><path d="M157 96L234 74V137L157 159Z" fill="#628d70"/><text x="179" y="122" font-size="12" fill="#eff5e9" transform="rotate(-16 179 122)">PRODUCT</text><path d="M66 41L95 62 M77 34L66 41L72 53" stroke="#39885e" fill="none" stroke-width="2"/>',
+        },
+        detail: {
+          name: "제형 · 디테일",
+          icon: "🔍",
+          tips: [
+            "로고, 마감, 제형처럼 보여줄 특징 하나를 고르세요.",
+            "너무 가까이 붙이지 말고 초점이 잡히는 거리에서 촬영하세요.",
+            "옆에서 들어오는 빛으로 질감을 드러내세요.",
+          ],
+          art: '<circle cx="170" cy="104" r="72" fill="#c4d4bd"/><rect x="121" y="50" width="98" height="112" rx="21" fill="#577c60"/><rect x="137" y="81" width="66" height="46" rx="3" fill="#f5e9cf"/><text x="170" y="109" text-anchor="middle" font-size="13" fill="#405b41">DETAIL</text><circle cx="170" cy="104" r="61" fill="none" stroke="#f6fff2" stroke-width="2"/><path d="M170 31V45 M170 164V178 M97 104H111 M230 104H244" stroke="#39885e" stroke-width="2"/>',
+        },
+        usecase: {
+          name: "실사용 · 공간",
+          icon: "📱",
+          tips: [
+            "책상이나 생활 공간에서 실제 사용하는 장면을 만드세요.",
+            "제품은 대각선 흐름에 놓고 주변 소품은 줄이세요.",
+            "제품의 크기나 쓰임새가 드러나게 촬영하세요.",
+          ],
+          art: '<path d="M0 153L340 125V200H0Z" fill="#cdbb9b"/><path d="M58 113L135 93L186 121L106 143Z" fill="#fcf7e8"/><path d="M65 107L62 65L134 50L135 93Z" fill="#526d57"/><path d="M73 98L71 70L126 59L127 88Z" fill="#b8d8b8"/><ellipse cx="235" cy="134" rx="34" ry="10" fill="#a99b7e"/><rect x="213" y="81" width="39" height="52" rx="8" fill="#6f9778"/><ellipse cx="232" cy="81" rx="19" ry="6" fill="#e1ebd8"/><path d="M252 91Q279 89 268 115L252 117" fill="none" stroke="#6f9778" stroke-width="7"/><path d="M38 172L290 46" stroke="#39885e" stroke-dasharray="6 6" fill="none"/>',
+        },
+        fashion: {
+          name: "착용 · 핏",
+          icon: "👕",
+          tips: [
+            "제품의 핏과 길이가 보이도록 전신 또는 상반신을 담으세요.",
+            "어깨선을 수평으로 맞추고 발끝 주변에 여백을 주세요.",
+            "렌즈를 과하게 기울이지 않으면 비율이 자연스럽습니다.",
+          ],
+          art: '<circle cx="170" cy="42" r="19" fill="#cba98b"/><path d="M139 68L112 102L128 117L143 98L140 135H200L197 98L212 117L228 102L201 68L185 62Q170 78 155 62Z" fill="#60846a"/><path d="M145 135L141 180H163L170 144L177 180H199L195 135Z" fill="#3a5143"/><path d="M112 68H228 M100 184H240" stroke="#39885e" stroke-dasharray="5 4"/><path d="M170 13V190" stroke="#39885e" opacity=".3"/>',
+        },
+      };
+      const $ = (id) => document.getElementById(id);
+      let currentPreset = "topview",
+        examplePreset = "topview",
+        currentStream = null,
+        actualFacing = "environment",
+        facingMode = "environment";
+      let cameraStarting = false,
+        cameraGeneration = 0,
+        capturing = false,
+        dbPromise = null,
+        activePhoto = null,
+        toastTimer;
+      const photos = [];
+      const photoURLs = new Map();
+      const video = $("video"),
+        canvas = $("captureCanvas"),
+        shutterBtn = $("shutterBtn");
+
+      function notify(message) {
+        $("toast").textContent = message;
+        $("toast").classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(
+          () => $("toast").classList.remove("show"),
+          3500,
+        );
       }
-    };
-
-    let currentPreset = 'topview';
-    let currentStream = null;
-    let facingMode = 'environment';
-    let photoCount = 0;
-    const capturedPhotos = [];
-
-    const video = document.getElementById('video');
-    const fallback = document.getElementById('fallback');
-    const startCamBtn = document.getElementById('startCamBtn');
-    const flipCamBtn = document.getElementById('flipCamBtn');
-    const gridToggleBtn = document.getElementById('gridToggleBtn');
-    const presetLayer = document.getElementById('presetLayer');
-    const baseGrid = document.getElementById('baseGrid');
-    const guideTip = document.getElementById('guideTip');
-    const shutterBtn = document.getElementById('shutterBtn');
-    const photoCountEl = document.getElementById('photoCount');
-    const galleryPreview = document.getElementById('galleryPreview');
-    const toast = document.getElementById('toast');
-    const canvas = document.getElementById('captureCanvas');
-
-    function setPreset(key) {
-      if (!PRESETS[key]) return;
-      currentPreset = key;
-      const data = PRESETS[key];
-      presetLayer.innerHTML = data.render();
-      guideTip.textContent = data.tip;
-
-      document.querySelectorAll('.preset-chip').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.preset === key);
+      function themeButton(key, example = false) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "preset-chip";
+        button.textContent = `${THEMES[key].icon} ${THEMES[key].name}`;
+        button.dataset.preset = key;
+        button.addEventListener("click", () =>
+          example ? showExample(key) : setPreset(key),
+        );
+        return button;
+      }
+      Object.keys(THEMES).forEach((key) => {
+        $("presetScroll").append(themeButton(key));
+        $("exampleTabs").append(themeButton(key, true));
       });
-    }
+      function setPreset(key) {
+        if (!PRESETS[key]) return;
+        currentPreset = key;
+        $("presetLayer").innerHTML = PRESETS[key].render();
+        $("guideTip").textContent = PRESETS[key].tip;
+        document.querySelectorAll("#presetScroll button").forEach((button) => {
+          const selected = button.dataset.preset === key;
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+      }
+      function showExample(key) {
+        examplePreset = key;
+        const theme = THEMES[key];
+        $("exampleName").textContent = theme.name;
+        $("exampleArt").innerHTML =
+          `<svg viewBox="0 0 340 200" role="img" aria-label="${theme.name} 구도 예시"><rect width="340" height="200" fill="#e7eee3"/>${theme.art}</svg>`;
+        $("exampleArt")
+          .querySelector("svg")
+          .setAttribute("aria-label", theme.name + " 구도 예시");
+        $("exampleTips").replaceChildren(
+          ...theme.tips.map((t) => {
+            const li = document.createElement("li");
+            li.textContent = t;
+            return li;
+          }),
+        );
+        document.querySelectorAll("#exampleTabs button").forEach((button) => {
+          const selected = button.dataset.preset === key;
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+      }
+      $("exampleBtn").addEventListener("click", () => {
+        showExample(currentPreset);
+        $("exampleDialog").showModal();
+      });
+      $("useThemeBtn").addEventListener("click", () => {
+        setPreset(examplePreset);
+        $("exampleDialog").close();
+        document
+          .querySelector(`#presetScroll [data-preset="${currentPreset}"]`)
+          .scrollIntoView({ block: "nearest", inline: "nearest" });
+      });
+      document.querySelectorAll("dialog").forEach((dialog) => {
+        dialog
+          .querySelector("[data-close]")
+          .addEventListener("click", () => dialog.close());
+      });
+      $("gridToggleBtn").addEventListener("click", () => {
+        const show = $("baseGrid").style.display === "none";
+        $("baseGrid").style.display = show ? "" : "none";
+        $("gridToggleBtn").setAttribute("aria-pressed", String(show));
+      });
 
-    async function startCamera() {
-      try {
-        if (currentStream) {
-          currentStream.getTracks().forEach(t => t.stop());
+      function openDB() {
+        if (!dbPromise)
+          dbPromise = new Promise((resolve, reject) => {
+            const request = indexedDB.open("reviewshot", 1);
+            request.onupgradeneeded = () =>
+              request.result.createObjectStore("photos", { keyPath: "id" });
+            request.onsuccess = () => {
+              const db = request.result;
+              db.onversionchange = () => {
+                db.close();
+                dbPromise = null;
+              };
+              resolve(db);
+            };
+            request.onerror = () => reject(request.error);
+            request.onblocked = () =>
+              reject(new Error("다른 창의 보관함을 닫고 다시 시도해 주세요."));
+          }).catch((error) => {
+            dbPromise = null;
+            throw error;
+          });
+        return dbPromise;
+      }
+      async function storePhoto(photo) {
+        const db = await openDB();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction("photos", "readwrite");
+          const { id, blob, theme, createdAt, width, height } = photo;
+          tx.objectStore("photos").put({
+            id,
+            blob,
+            theme,
+            createdAt,
+            width,
+            height,
+          });
+          tx.oncomplete = resolve;
+          tx.onabort = () => reject(tx.error || new Error("사진 저장 중단"));
+          tx.onerror = () => reject(tx.error);
+        });
+        photo.saved = true;
+      }
+      async function readPhotos() {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction("photos", "readonly");
+          const request = tx.objectStore("photos").getAll();
+          tx.oncomplete = () => resolve(request.result);
+          tx.onabort = () => reject(tx.error);
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+      async function removePhoto(id) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction("photos", "readwrite");
+          tx.objectStore("photos").delete(id);
+          tx.oncomplete = resolve;
+          tx.onabort = () => reject(tx.error);
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+      function photoURL(photo) {
+        if (!photoURLs.has(photo.id))
+          photoURLs.set(photo.id, URL.createObjectURL(photo.blob));
+        return photoURLs.get(photo.id);
+      }
+      function filename(photo) {
+        return `reviewshot-${photo.theme}-${new Date(photo.createdAt).toISOString().replace(/[:.]/g, "-")}-${photo.id.slice(-6)}.jpg`;
+      }
+      function photoFile(photo) {
+        return new File([photo.blob], filename(photo), { type: "image/jpeg" });
+      }
+      function supportsSharing(photo) {
+        try {
+          return !!(
+            navigator.share &&
+            navigator.canShare &&
+            navigator.canShare({ files: [photoFile(photo)] })
+          );
+        } catch {
+          return false;
         }
-        
-        // iOS Safari 호환을 위한 유연한 제약 조건 설정
-        const constraints = {
-          video: {
-            facingMode: { ideal: facingMode },
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          audio: false
+      }
+      function updateGallery() {
+        photos.sort((a, b) => b.createdAt - a.createdAt);
+        $("photoGrid").replaceChildren(
+          ...photos.map((photo) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.setAttribute(
+              "aria-label",
+              `${THEMES[photo.theme]?.name || "제품"} 사진 열기${photo.saved ? "" : " · 저장 실패"}`,
+            );
+            const img = document.createElement("img");
+            img.src = photoURL(photo);
+            img.alt = "";
+            img.loading = "lazy";
+            const label = document.createElement("span");
+            label.textContent =
+              (THEMES[photo.theme]?.name || "제품") +
+              (photo.saved ? "" : " · 미보관");
+            button.append(img, label);
+            button.addEventListener("click", () => openPhoto(photo));
+            return button;
+          }),
+        );
+        $("emptyGallery").hidden = photos.length > 0;
+        $("galleryPreview").replaceChildren();
+        if (photos.length) {
+          const img = document.createElement("img");
+          img.src = photoURL(photos[0]);
+          img.alt = "최근 사진";
+          $("galleryPreview").append(img);
+        } else $("galleryPreview").textContent = "보관함";
+        $("galleryPreview").setAttribute(
+          "aria-label",
+          `사진 보관함 열기 · ${photos.length}장`,
+        );
+      }
+      function openPhoto(photo) {
+        activePhoto = photo;
+        $("photoImage").src = photoURL(photo);
+        $("photoMeta").textContent =
+          `${THEMES[photo.theme]?.name || "제품"} · ${photo.width} × ${photo.height} · ${new Date(photo.createdAt).toLocaleString("ko-KR")}`;
+        $("downloadBtn").href = photoURL(photo);
+        $("downloadBtn").download = filename(photo);
+        $("shareBtn").hidden = !supportsSharing(photo);
+        $("photoState").textContent = photo.saved
+          ? "앱 보관함에 저장됨 · 사진 앱에는 별도로 저장해 주세요."
+          : "앱 보관함 저장 실패 · 이 창을 닫기 전에 JPEG를 다운로드하거나 공유해 주세요.";
+        $("photoState").classList.toggle("warning", !photo.saved);
+        $("retryBtn").hidden = photo.saved;
+        if (!$("photoDialog").open) $("photoDialog").showModal();
+      }
+      $("galleryPreview").addEventListener("click", () => {
+        $("galleryDialog").showModal();
+        updateGallery();
+      });
+      $("shareBtn").addEventListener("click", async () => {
+        if (!activePhoto) return;
+        const photo = activePhoto;
+        try {
+          await navigator.share({ files: [photoFile(photo)] });
+          $("photoState").textContent =
+            "공유 메뉴를 닫았습니다. 사진 앱에서 저장 결과를 확인해 주세요.";
+        } catch (error) {
+          if (error.name !== "AbortError")
+            $("photoState").textContent =
+              "공유할 수 없습니다. JPEG 파일 다운로드를 이용해 주세요.";
+        }
+      });
+      $("downloadBtn").addEventListener("click", () => {
+        $("photoState").textContent =
+          "JPEG 다운로드를 요청했습니다. 브라우저 다운로드 또는 파일 앱을 확인해 주세요.";
+      });
+      $("retryBtn").addEventListener("click", async () => {
+        if (!activePhoto) return;
+        const photo = activePhoto;
+        $("retryBtn").disabled = true;
+        try {
+          await storePhoto(photo);
+          updateGallery();
+          openPhoto(photo);
+        } catch {
+          notify("저장 공간을 확인하거나 JPEG 파일을 다운로드해 주세요.");
+        } finally {
+          $("retryBtn").disabled = false;
+        }
+      });
+      $("deleteBtn").addEventListener("click", async () => {
+        const photo = activePhoto;
+        if (
+          !photo ||
+          !confirm(
+            "이 사진을 앱 보관함에서 삭제할까요? 별도로 저장한 파일은 유지됩니다.",
+          )
+        )
+          return;
+        $("deleteBtn").disabled = true;
+        try {
+          if (photo.saved) await removePhoto(photo.id);
+          photos.splice(photos.indexOf(photo), 1);
+          $("photoDialog").close();
+          $("photoImage").removeAttribute("src");
+          URL.revokeObjectURL(photoURLs.get(photo.id));
+          photoURLs.delete(photo.id);
+          activePhoto = null;
+          updateGallery();
+          notify("보관함에서 삭제했습니다.");
+        } catch {
+          notify("삭제하지 못했습니다. 다시 시도해 주세요.");
+        } finally {
+          $("deleteBtn").disabled = false;
+        }
+      });
+      const galleryReady = (async () => {
+        try {
+          photos.push(
+            ...(await readPhotos()).map((photo) => ({ ...photo, saved: true })),
+          );
+        } catch {
+          $("storageWarning").hidden = false;
+          $("storageWarning").textContent =
+            "보관함을 열 수 없습니다. 촬영 후 사진을 반드시 다운로드하거나 공유해 주세요.";
+        }
+        updateGallery();
+      })();
+
+      function cameraReady() {
+        return !!(
+          currentStream
+            ?.getVideoTracks()
+            .some((t) => t.readyState === "live") &&
+          video.readyState >= 2 &&
+          video.videoWidth &&
+          video.videoHeight &&
+          !video.paused
+        );
+      }
+      function refreshShutter() {
+        shutterBtn.disabled = capturing || !cameraReady();
+      }
+      function stopCamera() {
+        cameraGeneration++;
+        if (currentStream) currentStream.getTracks().forEach((t) => t.stop());
+        currentStream = null;
+        video.srcObject = null;
+        shutterBtn.disabled = true;
+        $("fallback").hidden = false;
+      }
+      async function startCamera() {
+        if (cameraStarting) return;
+        cameraStarting = true;
+        stopCamera();
+        const generation = cameraGeneration;
+        $("startCamBtn").disabled = true;
+        $("flipCamBtn").disabled = true;
+        $("cameraMessage").textContent = "카메라를 준비하고 있습니다…";
+        try {
+          if (!navigator.mediaDevices?.getUserMedia)
+            throw Object.assign(new Error(), { name: "UnsupportedError" });
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: facingMode },
+              width: { ideal: 2560 },
+              height: { ideal: 1920 },
+            },
+            audio: false,
+          });
+          if (generation !== cameraGeneration || document.hidden) {
+            stream.getTracks().forEach((t) => t.stop());
+            return;
+          }
+          currentStream = stream;
+          actualFacing =
+            stream.getVideoTracks()[0].getSettings().facingMode || facingMode;
+          video.classList.toggle("front-cam", actualFacing === "user");
+          video.srcObject = stream;
+          await video.play();
+          if (generation !== cameraGeneration) return;
+          $("fallback").hidden = true;
+          stream.getVideoTracks()[0].addEventListener("ended", () => {
+            if (stream !== currentStream) return;
+            stopCamera();
+            $("cameraMessage").textContent =
+              "카메라 연결이 끊겼습니다. 다시 켜주세요.";
+          });
+          refreshShutter();
+        } catch (error) {
+          if (generation !== cameraGeneration) return;
+          stopCamera();
+          $("cameraMessage").textContent =
+            error.name === "NotAllowedError"
+              ? "카메라 권한이 필요합니다. 브라우저 설정에서 이 사이트의 카메라를 허용해 주세요."
+              : error.name === "NotFoundError"
+                ? "사용 가능한 카메라를 찾지 못했습니다."
+                : error.name === "UnsupportedError"
+                  ? "HTTPS 주소에서 카메라를 지원하는 브라우저로 열어 주세요."
+                  : "카메라를 켜지 못했습니다. 다른 카메라 앱을 닫고 다시 시도해 주세요.";
+        } finally {
+          cameraStarting = false;
+          $("startCamBtn").disabled = false;
+          $("flipCamBtn").disabled = false;
+        }
+      }
+      $("startCamBtn").addEventListener("click", startCamera);
+      $("flipCamBtn").addEventListener("click", () => {
+        if (cameraStarting || capturing) return;
+        facingMode = actualFacing === "user" ? "environment" : "user";
+        startCamera();
+      });
+      video.addEventListener("loadeddata", refreshShutter);
+      video.addEventListener("playing", refreshShutter);
+      video.addEventListener("pause", refreshShutter);
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          stopCamera();
+          $("cameraMessage").textContent =
+            "카메라가 일시 중지되었습니다. 다시 켜서 촬영하세요.";
+        }
+      });
+      window.addEventListener("pagehide", stopCamera);
+      function previewCrop(
+        sourceWidth,
+        sourceHeight,
+        targetWidth,
+        targetHeight,
+      ) {
+        const scale = Math.max(
+          targetWidth / sourceWidth,
+          targetHeight / sourceHeight,
+        );
+        const width = targetWidth / scale,
+          height = targetHeight / scale;
+        return {
+          x: (sourceWidth - width) / 2,
+          y: (sourceHeight - height) / 2,
+          width,
+          height,
         };
-
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        currentStream = stream;
-        video.srcObject = stream;
-        
-        // iOS Safari 비디오 재생 보장
-        await video.play().catch(e => console.log("Video play error:", e));
-        
-        fallback.style.display = 'none';
-
-        // 전면 카메라일 때 좌우 반전 처리
-        if (facingMode === 'user') {
-          video.classList.add('front-cam');
-        } else {
-          video.classList.remove('front-cam');
+      }
+      shutterBtn.addEventListener("click", async () => {
+        if (capturing || !cameraReady()) {
+          notify("카메라를 켠 뒤 영상이 보이면 촬영해 주세요.");
+          return;
         }
-      } catch (err) {
-        console.warn('Camera access error:', err);
-        fallback.style.display = 'flex';
-      }
-    }
-
-    flipCamBtn.addEventListener('click', () => {
-      facingMode = facingMode === 'environment' ? 'user' : 'environment';
-      startCamera();
-    });
-
-    gridToggleBtn.addEventListener('click', () => {
-      baseGrid.style.display = baseGrid.style.display === 'none' ? 'block' : 'none';
-    });
-
-    document.querySelectorAll('.preset-chip').forEach(btn => {
-      btn.addEventListener('click', () => {
-        setPreset(btn.dataset.preset);
-      });
-    });
-
-    startCamBtn.addEventListener('click', startCamera);
-
-    shutterBtn.addEventListener('click', () => {
-      canvas.width = video.videoWidth || 1280;
-      canvas.height = video.videoHeight || 720;
-      const ctx = canvas.getContext('2d');
-      
-      if (video.videoWidth > 0) {
-        // 전면 카메라로 찍은 경우 캡처본도 좌우 반전 동기화
-        if (facingMode === 'user') {
-          ctx.translate(canvas.width, 0);
-          ctx.scale(-1, 1);
+        capturing = true;
+        refreshShutter();
+        try {
+          const theme = currentPreset;
+          const viewport = document
+            .querySelector(".camera-viewport")
+            .getBoundingClientRect();
+          if (!viewport.width || !viewport.height)
+            throw new Error("미리보기 크기 오류");
+          const crop = previewCrop(
+            video.videoWidth,
+            video.videoHeight,
+            viewport.width,
+            viewport.height,
+          );
+          canvas.width = Math.max(1, Math.round(crop.width));
+          canvas.height = Math.max(1, Math.round(crop.height));
+          const ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("사진 처리 오류");
+          if (actualFacing === "user") {
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+          }
+          ctx.drawImage(
+            video,
+            crop.x,
+            crop.y,
+            crop.width,
+            crop.height,
+            0,
+            0,
+            canvas.width,
+            canvas.height,
+          );
+          const blob = await new Promise((resolve, reject) =>
+            canvas.toBlob(
+              (result) =>
+                result ? resolve(result) : reject(new Error("JPEG 변환 실패")),
+              "image/jpeg",
+              0.95,
+            ),
+          );
+          const photo = {
+            id: crypto.randomUUID(),
+            blob,
+            theme,
+            createdAt: Date.now(),
+            width: canvas.width,
+            height: canvas.height,
+            saved: false,
+          };
+          await galleryReady;
+          photos.unshift(photo);
+          try {
+            await storePhoto(photo);
+            notify("앱 보관함에 저장했어요. 왼쪽 사진을 눌러 꺼내세요.");
+            navigator.storage?.persist?.().catch(() => {});
+          } catch {
+            notify("보관함 저장 실패 · 사진을 지금 내려받아 주세요.");
+          }
+          updateGallery();
+          if (!photo.saved) openPhoto(photo);
+        } catch {
+          notify("촬영하지 못했습니다. 카메라를 다시 켜고 시도해 주세요.");
+        } finally {
+          capturing = false;
+          refreshShutter();
         }
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      } else {
-        ctx.fillStyle = '#222';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#34d399';
-        ctx.font = '24px sans-serif';
-        ctx.fillText(`리뷰샷 - ${currentPreset} 컷`, 40, 80);
-      }
-      
-      const imgData = canvas.toDataURL('image/jpeg', 0.9);
-      capturedPhotos.push(imgData);
-      photoCount++;
-      photoCountEl.textContent = `${photoCount}/5`;
-      galleryPreview.innerHTML = `<img src="${imgData}">`;
-
-      toast.textContent = `✅ [${currentPreset}] 촬영 완료! (${photoCount}/5)`;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
-
-      const keys = Object.keys(PRESETS);
-      const currentIndex = keys.indexOf(currentPreset);
-      if (currentIndex < keys.length - 1) {
-        setTimeout(() => {
-          setPreset(keys[currentIndex + 1]);
-        }, 800);
-      }
-    });
-
-    setPreset('topview');
-    
-    // 페이지 로드 시 자동 카메라 권한 요청 시도 (아이폰 보안 정책상 사용자 인터랙션이 필요할 수 있어 실패 시 fallback 유지)
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      startCamera().catch(() => {
-        fallback.style.display = 'flex';
       });
-    }
-  </script>
-</body>
+      setPreset("topview");
+    </script>
+  </body>
 </html>
