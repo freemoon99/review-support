@@ -432,6 +432,252 @@
           transition: none !important;
         }
       }
+
+      :root {
+        --photo-ratio: 0.75;
+      }
+      .camera-stage {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        place-items: center;
+        margin: 0 10px;
+        overflow: hidden;
+      }
+      .camera-viewport {
+        flex: none;
+        min-height: 0;
+        margin: 0;
+        max-width: 100%;
+        border-radius: 16px;
+      }
+      .reference-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        opacity: 0.3;
+        pointer-events: none;
+      }
+      .reference-overlay svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .guide-overlay {
+        z-index: 2;
+      }
+      .camera-fallback {
+        z-index: 3;
+        padding: 14px;
+      }
+      .guide-tip {
+        z-index: 4;
+        font-size: 11px;
+        top: 9px;
+        padding: 6px 8px;
+      }
+      .camera-fallback strong {
+        font-size: 19px;
+      }
+      .guide-controls {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: space-between;
+      }
+      .select-label {
+        color: var(--muted);
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      select {
+        color: #ecf6ee;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        padding: 9px 4px;
+        min-height: 38px;
+        font: inherit;
+      }
+      .guide-modes {
+        display: flex;
+        gap: 4px;
+      }
+      .guide-modes button {
+        background: var(--panel);
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        padding: 9px;
+        min-height: 38px;
+        font-size: 11px;
+      }
+      .guide-modes button[aria-pressed="true"] {
+        color: var(--green);
+        border-color: #6c987b;
+      }
+      .opacity-label {
+        flex-basis: 100%;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .opacity-label input {
+        flex: 1;
+        min-height: 28px;
+        accent-color: var(--green);
+      }
+      .bottom-bar {
+        gap: 10px;
+      }
+      .example-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        overflow: visible;
+      }
+      .example-tabs .theme-card {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 5px;
+        border-radius: 12px;
+        padding: 5px 5px 9px;
+        white-space: normal;
+        text-align: left;
+        min-width: 0;
+        background: var(--panel);
+        color: #dbe6dd;
+      }
+      .theme-thumb {
+        display: block;
+        border-radius: 8px;
+        overflow: hidden;
+        aspect-ratio: 1;
+        background: #eae7dc;
+      }
+      .theme-thumb svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .theme-card strong {
+        font-size: 11px;
+        padding: 0 3px;
+      }
+      .theme-card small {
+        font-size: 9px;
+        color: var(--muted);
+        padding: 0 3px;
+      }
+      .example-tabs .theme-card.active {
+        border-color: var(--green);
+        box-shadow: 0 0 0 1px var(--green);
+      }
+      .example-preview {
+        display: flex;
+        justify-content: center;
+        background: #0a100c;
+        border-radius: 16px;
+        padding: 10px;
+      }
+      .example-art {
+        width: min(100%, 230px);
+        aspect-ratio: var(--photo-ratio);
+        border-radius: 10px;
+      }
+      .example-art svg {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+      }
+      .example-guide-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--muted);
+        min-height: 40px;
+      }
+      .example-guide-toggle input {
+        accent-color: var(--green);
+        width: 18px;
+        height: 18px;
+      }
+      .example-angle {
+        font-size: 13px;
+        color: var(--green);
+        margin: 7px 0;
+      }
+      #exampleLight {
+        margin: 7px 0;
+      }
+      @media (max-height: 700px) {
+        .bottom-bar {
+          gap: 5px;
+        }
+        .preset-chip {
+          padding: 8px 11px;
+        }
+        .top-bar {
+          padding-top: calc(6px + env(safe-area-inset-top));
+          padding-bottom: 6px;
+        }
+        .brand small {
+          display: none;
+        }
+        .shutter-btn {
+          width: 60px;
+          height: 60px;
+        }
+        .section-label .text-btn {
+          padding: 4px;
+        }
+        .camera-fallback p {
+          font-size: 12px;
+          line-height: 1.4;
+        }
+        .camera-fallback strong {
+          font-size: 16px;
+        }
+      }
+      @media (orientation: landscape) and (max-height: 600px) {
+        #app {
+          max-width: 1100px;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 300px;
+          grid-template-rows: auto minmax(0, 1fr);
+        }
+        .top-bar {
+          grid-column: 1 / -1;
+        }
+        .camera-stage {
+          grid-column: 1;
+          grid-row: 2;
+          margin-bottom: 10px;
+        }
+        .bottom-bar {
+          grid-column: 2;
+          grid-row: 2;
+          justify-content: center;
+          overflow-y: auto;
+          padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+        }
+        .camera-fallback p {
+          margin: 8px 0;
+        }
+        .camera-fallback strong {
+          font-size: 14px;
+        }
+        .shutter-row {
+          padding: 0 4px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -439,7 +685,7 @@
       <header class="top-bar">
         <div class="brand">리뷰샷<small>PRODUCT PHOTO GUIDE</small></div>
         <div class="top-actions">
-          <button class="icon-btn" id="gridToggleBtn" aria-pressed="true">
+          <button class="icon-btn" id="gridToggleBtn" aria-pressed="false">
             격자</button
           ><button
             class="icon-btn"
@@ -450,36 +696,45 @@
           </button>
         </div>
       </header>
-      <section class="camera-viewport" aria-label="카메라 미리보기">
-        <video id="video" autoplay playsinline muted></video>
-        <div class="camera-fallback" id="fallback">
-          <strong>제품을 돋보이게, 한 컷.</strong>
-          <p id="cameraMessage">
-            마음에 드는 테마를 고르고<br />가이드에 맞춰 촬영해 보세요.
-          </p>
-          <button class="start-cam-btn" id="startCamBtn">카메라 켜기</button>
-        </div>
-        <svg
-          class="guide-overlay"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
+      <div class="camera-stage" id="cameraStage">
+        <section
+          class="camera-viewport"
+          id="cameraFrame"
+          aria-label="카메라 미리보기"
         >
-          <g
-            id="baseGrid"
-            stroke="rgba(255,255,255,.25)"
-            stroke-width=".3"
-            stroke-dasharray="1 1"
+          <video id="video" autoplay playsinline muted></video>
+          <div class="camera-fallback" id="fallback">
+            <strong>제품을 돋보이게, 한 컷.</strong>
+            <p id="cameraMessage">
+              마음에 드는 테마를 고르고<br />가이드에 맞춰 촬영해 보세요.
+            </p>
+            <button class="start-cam-btn" id="startCamBtn">카메라 켜기</button>
+          </div>
+          <div id="referenceOverlay" class="reference-overlay" hidden></div>
+          <svg
+            id="guideOverlay"
+            class="guide-overlay"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            aria-hidden="true"
           >
-            <path d="M33.3 0V100 M66.6 0V100 M0 33.3H100 M0 66.6H100" />
-          </g>
-          <g id="presetLayer"></g>
-        </svg>
-        <div class="guide-tip" id="guideTip"></div>
-      </section>
+            <g
+              id="baseGrid"
+              style="display: none"
+              stroke="rgba(255,255,255,.25)"
+              stroke-width=".3"
+              stroke-dasharray="1 1"
+            >
+              <path d="M33.3 0V100 M66.6 0V100 M0 33.3H100 M0 66.6H100" />
+            </g>
+            <g id="presetLayer"></g>
+          </svg>
+          <div class="guide-tip" id="guideTip"></div>
+        </section>
+      </div>
       <footer class="bottom-bar">
         <div class="section-label">
-          <span>촬영 테마</span
+          <span>구도 선택</span
           ><button class="text-btn" id="exampleBtn">구도 예시 보기 ↗</button>
         </div>
         <div
@@ -487,6 +742,32 @@
           id="presetScroll"
           aria-label="촬영 테마"
         ></div>
+        <div class="guide-controls">
+          <label class="select-label"
+            >비율
+            <select id="ratioSelect" aria-label="사진 비율">
+              <option value="0.75">3:4</option>
+              <option value="1">1:1</option>
+              <option value="1.3333333333333333">4:3</option>
+            </select></label
+          >
+          <div class="guide-modes" aria-label="구도 가이드 표시">
+            <button data-guide="lines" aria-pressed="true">윤곽선</button
+            ><button data-guide="example" aria-pressed="false">
+              예시 겹치기</button
+            ><button data-guide="off" aria-pressed="false">끄기</button>
+          </div>
+          <label class="opacity-label" hidden id="opacityLabel"
+            >진하기
+            <input
+              id="guideOpacity"
+              type="range"
+              min="10"
+              max="70"
+              value="30"
+              aria-label="예시 겹치기 진하기"
+          /></label>
+        </div>
         <div class="shutter-row">
           <button
             class="gallery-preview"
@@ -512,8 +793,19 @@
         <button class="close" data-close aria-label="예시 닫기">×</button>
       </div>
       <div class="example-tabs" id="exampleTabs" aria-label="예시 테마"></div>
-      <div class="example-art" id="exampleArt"></div>
-      <p class="example-caption">구도를 설명하기 위한 일러스트입니다.</p>
+      <div class="example-preview">
+        <div class="example-art" id="exampleArt"></div>
+      </div>
+      <label class="example-guide-toggle"
+        ><input type="checkbox" id="exampleGuideToggle" checked /> 배치 가이드
+        함께 보기</label
+      >
+      <p class="example-angle" id="exampleAngle"></p>
+      <p class="muted" id="exampleLight"></p>
+      <p class="example-caption">
+        가상 제품으로 만든 배치 예시입니다. 촬영 화면에도 같은 위치로
+        표시됩니다.
+      </p>
       <h3 id="exampleName"></h3>
       <ul class="tips" id="exampleTips"></ul>
       <button class="primary wide" id="useThemeBtn">이 테마로 촬영</button>
@@ -555,115 +847,198 @@
     </dialog>
     <canvas id="captureCanvas" hidden></canvas>
     <script>
-      const PRESETS = {
-        topview: {
-          tip: "📦 박스·구성품을 중앙 사각틀에 맞춰 위에서 내려찍으세요",
-          render: () => `
-          <rect x="20" y="20" width="60" height="60" rx="3" fill="none" stroke="#34d399" stroke-width="0.8" stroke-dasharray="3 2"/>
-          <path d="M 15 25 L 15 15 L 25 15" fill="none" stroke="#fff" stroke-width="0.8"/>
-          <path d="M 75 15 L 85 15 L 85 25" fill="none" stroke="#fff" stroke-width="0.8"/>
-          <path d="M 15 75 L 15 85 L 25 85" fill="none" stroke="#fff" stroke-width="0.8"/>
-          <path d="M 85 75 L 85 85 L 75 85" fill="none" stroke="#fff" stroke-width="0.8"/>
-          <line x1="50" y1="46" x2="50" y2="54" stroke="rgba(52,211,153,0.6)" stroke-width="0.5"/>
-          <line x1="46" y1="50" x2="54" y2="50" stroke="rgba(52,211,153,0.6)" stroke-width="0.5"/>
-        `,
-        },
-        angle45: {
-          tip: "✨ 제품 정면을 45도 각도 투시선에 맞추고 수평을 잡으세요",
-          render: () => `
-          <polygon points="30,30 70,30 80,75 20,75" fill="none" stroke="#34d399" stroke-width="0.8" stroke-dasharray="3 2"/>
-          <line x1="10" y1="75" x2="90" y2="75" stroke="#10b981" stroke-width="0.6"/>
-          <ellipse cx="50" cy="30" rx="20" ry="6" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="0.6" stroke-dasharray="2 1"/>
-          <line x1="30" y1="30" x2="20" y2="75" stroke="rgba(52,211,153,0.5)" stroke-width="0.5"/>
-          <line x1="70" y1="30" x2="80" y2="75" stroke="rgba(52,211,153,0.5)" stroke-width="0.5"/>
-        `,
-        },
-        detail: {
-          tip: "🔍 제형·로고·마감 디테일을 원형 포커스 안에 꽉 채우세요",
-          render: () => `
-          <circle cx="50" cy="50" r="24" fill="none" stroke="#34d399" stroke-width="0.9" stroke-dasharray="3 1.5"/>
-          <circle cx="50" cy="50" r="32" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.4"/>
-          <line x1="50" y1="20" x2="50" y2="80" stroke="rgba(52,211,153,0.4)" stroke-width="0.4"/>
-          <line x1="20" y1="50" x2="80" y2="50" stroke="rgba(52,211,153,0.4)" stroke-width="0.4"/>
-          <rect x="15" y="15" width="70" height="70" rx="4" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="0.4"/>
-        `,
-        },
-        usecase: {
-          tip: "📱 손에 쥐거나 책상 배치! 대각선 구도로 실사용감 살리기",
-          render: () => `
-          <line x1="15" y1="85" x2="65" y2="25" stroke="#34d399" stroke-width="0.8" stroke-dasharray="3 2"/>
-          <line x1="65" y1="25" x2="85" y2="85" stroke="rgba(52,211,153,0.5)" stroke-width="0.6"/>
-          <ellipse cx="65" cy="35" rx="16" ry="18" fill="none" stroke="#34d399" stroke-width="0.9"/>
-          <circle cx="30" cy="70" r="14" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="0.6" stroke-dasharray="2 2"/>
-        `,
-        },
-        fashion: {
-          tip: "👕 머리부터 발끝까지 전신/상반신 실루엣 가이드에 맞추세요",
-          render: () => `
-          <ellipse cx="50" cy="22" rx="10" ry="12" fill="none" stroke="#34d399" stroke-width="0.8" stroke-dasharray="2 2"/>
-          <line x1="30" y1="36" x2="70" y2="36" stroke="#34d399" stroke-width="0.8"/>
-          <rect x="32" y="36" width="36" height="32" fill="none" stroke="rgba(52,211,153,0.6)" stroke-width="0.6" stroke-dasharray="3 2"/>
-          <line x1="50" y1="10" x2="50" y2="92" stroke="#10b981" stroke-width="0.5"/>
-          <line x1="20" y1="90" x2="80" y2="90" stroke="rgba(255,255,255,0.6)" stroke-width="0.6"/>
-        `,
-        },
-      };
-
+      // Every example and live overlay uses the same normalized scene coordinates.
+      // The camera frame and example share a selected aspect ratio, so placement matches.
       const THEMES = {
-        topview: {
-          name: "언박싱 · 항공샷",
-          icon: "📦",
+        center: {
+          name: "중앙 대표 컷",
+          icon: "◉",
+          tag: "어떤 제품이든",
+          tip: "제품을 중앙에 크게 · 위아래 여백은 비슷하게",
+          angle: "제품 눈높이에서 정면 촬영",
+          light: "창가 빛을 옆에서 받게 두세요.",
           tips: [
-            "제품과 구성품을 간격을 두고 배치하세요.",
-            "렌즈를 바닥과 평행하게, 바로 위에서 내려다보세요.",
-            "창가의 부드러운 빛을 쓰고 손 그림자를 피하세요.",
+            "제품을 중앙 윤곽선 안에 놓고 로고가 정면을 보게 맞추세요.",
+            "렌즈를 제품의 중간 높이에 두고 수직선이 기울지 않게 하세요.",
+            "배경과 제품 색을 다르게 하고 주변 소품은 빼세요.",
           ],
-          art: '<rect x="47" y="38" width="130" height="124" rx="5" fill="#cfab7c"/><path d="M47 66H177 M112 38V66" stroke="#9a754c" stroke-width="2"/><rect x="65" y="87" width="94" height="54" rx="3" fill="#f3dfbb"/><rect x="207" y="68" width="48" height="84" rx="12" fill="#517c63"/><rect x="217" y="58" width="28" height="16" rx="3" fill="#213e2b"/><ellipse cx="285" cy="140" rx="15" ry="16" fill="#d4ba8d"/><path d="M32 25H303V179H32Z" fill="none" stroke="#39885e" stroke-dasharray="6 5"/>',
+          objects: [
+            { type: "bottle", x: 34, y: 24, w: 32, h: 53, label: "제품" },
+          ],
+          lines: '<path d="M50 12V88 M15 78H85"/>',
+          labels: [
+            ["제품 중앙", 50, 19],
+            ["바닥선", 84, 84],
+          ],
         },
         angle45: {
-          name: "제품 · 45도",
-          icon: "✨",
+          name: "대각선 배치",
+          icon: "↗",
+          tag: "화장품 · 문구",
+          tip: "제품을 대각선으로 · 작은 소품은 반대편에",
+          angle: "바닥과 평행하게 위에서 촬영",
+          light: "빛을 받는 방향과 그림자를 함께 살려보세요.",
           tips: [
-            "제품의 정면과 옆면이 함께 보이도록 배치하세요.",
-            "렌즈를 제품보다 살짝 높이고 대각선으로 내려다보세요.",
-            "배경은 단순하게, 제품 주변에는 여백을 남기세요.",
+            "바닥에 놓은 제품을 대각선 방향으로 돌려 놓으세요.",
+            "소품은 제품보다 작게, 오른쪽 아래에 하나만 두세요.",
+            "휴대폰을 바닥과 평행하게 들고 제품 전체를 담으세요.",
           ],
-          art: '<path d="M0 146H340" stroke="#c6d3bd"/><ellipse cx="184" cy="161" rx="87" ry="13" fill="#c1cdb7"/><path d="M117 68L197 49L234 74L157 96Z" fill="#8fb09a"/><path d="M117 68L157 96V159L117 130Z" fill="#3f654d"/><path d="M157 96L234 74V137L157 159Z" fill="#628d70"/><text x="179" y="122" font-size="12" fill="#eff5e9" transform="rotate(-16 179 122)">PRODUCT</text><path d="M66 41L95 62 M77 34L66 41L72 53" stroke="#39885e" fill="none" stroke-width="2"/>',
+          objects: [
+            {
+              type: "bottle",
+              x: 33,
+              y: 24,
+              w: 29,
+              h: 52,
+              rotate: 24,
+              label: "제품",
+            },
+            { type: "jar", x: 70, y: 68, w: 16, h: 14, label: "소품" },
+          ],
+          lines: '<path d="M18 14L81 88"/>',
+          labels: [
+            ["대각선 배치", 50, 13],
+            ["작은 소품", 78, 89],
+          ],
         },
-        detail: {
-          name: "제형 · 디테일",
-          icon: "🔍",
+        topview: {
+          name: "구성품 펼침",
+          icon: "▦",
+          tag: "언박싱 · 세트",
+          tip: "큰 박스는 왼쪽 · 제품과 구성품은 오른쪽에 정돈",
+          angle: "바닥과 평행하게 위에서 촬영",
+          light: "휴대폰이나 손 그림자가 들어오지 않게 하세요.",
           tips: [
-            "로고, 마감, 제형처럼 보여줄 특징 하나를 고르세요.",
-            "너무 가까이 붙이지 말고 초점이 잡히는 거리에서 촬영하세요.",
-            "옆에서 들어오는 빛으로 질감을 드러내세요.",
+            "큰 박스를 왼쪽에, 본품과 작은 구성품을 오른쪽에 놓으세요.",
+            "물건끼리 겹치지 않게 일정한 간격을 남기세요.",
+            "구성품을 화면 끝에 붙이지 말고 사방에 여백을 주세요.",
           ],
-          art: '<circle cx="170" cy="104" r="72" fill="#c4d4bd"/><rect x="121" y="50" width="98" height="112" rx="21" fill="#577c60"/><rect x="137" y="81" width="66" height="46" rx="3" fill="#f5e9cf"/><text x="170" y="109" text-anchor="middle" font-size="13" fill="#405b41">DETAIL</text><circle cx="170" cy="104" r="61" fill="none" stroke="#f6fff2" stroke-width="2"/><path d="M170 31V45 M170 164V178 M97 104H111 M230 104H244" stroke="#39885e" stroke-width="2"/>',
+          objects: [
+            { type: "box", x: 13, y: 28, w: 39, h: 46, label: "박스" },
+            { type: "bottle", x: 64, y: 24, w: 21, h: 39, label: "본품" },
+            { type: "jar", x: 64, y: 71, w: 21, h: 16, label: "구성품" },
+          ],
+          lines: '<path d="M57 18V90 M9 92H91"/>',
+          labels: [
+            ["박스", 32, 22],
+            ["본품", 75, 18],
+            ["구성품", 75, 94],
+          ],
+        },
+        negative: {
+          name: "여백 있는 컷",
+          icon: "◧",
+          tag: "블로그 · 표지",
+          tip: "제품은 오른쪽 아래 · 왼쪽 위는 여백으로",
+          angle: "정면 또는 살짝 위에서 촬영",
+          light: "빈 공간에도 은은한 그림자가 생기면 좋습니다.",
+          tips: [
+            "제품을 오른쪽 삼분할 선에 맞추고 바닥선을 정돈하세요.",
+            "왼쪽 위는 비워 두어 제목이나 문구를 넣을 공간을 만드세요.",
+            "빈 공간에 소품을 채우기보다 배경 질감을 살려보세요.",
+          ],
+          objects: [
+            { type: "bottle", x: 55, y: 39, w: 28, h: 46, label: "제품" },
+          ],
+          lines:
+            '<path d="M66.7 15V92"/><rect x="12" y="14" width="38" height="39" rx="2"/>',
+          labels: [
+            ["비워 두는 공간", 31, 35],
+            ["제품", 69, 93],
+          ],
         },
         usecase: {
-          name: "실사용 · 공간",
-          icon: "📱",
+          name: "실사용 장면",
+          icon: "☕",
+          tag: "생활용품 · 소형가전",
+          tip: "제품은 오른쪽 · 왼쪽 소품으로 사용 맥락 만들기",
+          angle: "책상보다 살짝 위에서 내려다보기",
+          light: "실제 사용하는 장소에서 자연광을 이용하세요.",
           tips: [
-            "책상이나 생활 공간에서 실제 사용하는 장면을 만드세요.",
-            "제품은 대각선 흐름에 놓고 주변 소품은 줄이세요.",
-            "제품의 크기나 쓰임새가 드러나게 촬영하세요.",
+            "제품을 오른쪽에 놓고 평소 함께 쓰는 물건 하나를 왼쪽에 두세요.",
+            "소품은 제품보다 작게, 제품과 겹치지 않도록 배치하세요.",
+            "제품의 쓰임과 크기가 잘 드러나도록 배경을 정리하세요.",
           ],
-          art: '<path d="M0 153L340 125V200H0Z" fill="#cdbb9b"/><path d="M58 113L135 93L186 121L106 143Z" fill="#fcf7e8"/><path d="M65 107L62 65L134 50L135 93Z" fill="#526d57"/><path d="M73 98L71 70L126 59L127 88Z" fill="#b8d8b8"/><ellipse cx="235" cy="134" rx="34" ry="10" fill="#a99b7e"/><rect x="213" y="81" width="39" height="52" rx="8" fill="#6f9778"/><ellipse cx="232" cy="81" rx="19" ry="6" fill="#e1ebd8"/><path d="M252 91Q279 89 268 115L252 117" fill="none" stroke="#6f9778" stroke-width="7"/><path d="M38 172L290 46" stroke="#39885e" stroke-dasharray="6 6" fill="none"/>',
+          objects: [
+            {
+              type: "book",
+              x: 12,
+              y: 53,
+              w: 32,
+              h: 27,
+              rotate: -10,
+              label: "생활 소품",
+            },
+            { type: "bottle", x: 57, y: 28, w: 28, h: 49, label: "제품" },
+          ],
+          lines: '<path d="M9 84H91 M47 24V82"/>',
+          labels: [
+            ["생활 소품", 28, 92],
+            ["주인공은 제품", 71, 21],
+          ],
         },
-        fashion: {
-          name: "착용 · 핏",
-          icon: "👕",
+        detail: {
+          name: "질감 · 디테일",
+          icon: "⌕",
+          tag: "로고 · 마감 · 제형",
+          tip: "특징 하나를 크게 · 초점이 잡히는 거리 유지",
+          angle: "보여주려는 면과 렌즈를 평행하게",
+          light: "비스듬한 빛이 재질과 굴곡을 드러냅니다.",
           tips: [
-            "제품의 핏과 길이가 보이도록 전신 또는 상반신을 담으세요.",
-            "어깨선을 수평으로 맞추고 발끝 주변에 여백을 주세요.",
-            "렌즈를 과하게 기울이지 않으면 비율이 자연스럽습니다.",
+            "로고나 재질처럼 보여줄 특징 하나만 골라 중앙에 담으세요.",
+            "너무 가까이 붙이지 말고 초점이 맞는 거리까지 물러나세요.",
+            "폰 그림자를 피하고 옆에서 오는 빛으로 질감을 살리세요.",
           ],
-          art: '<circle cx="170" cy="42" r="19" fill="#cba98b"/><path d="M139 68L112 102L128 117L143 98L140 135H200L197 98L212 117L228 102L201 68L185 62Q170 78 155 62Z" fill="#60846a"/><path d="M145 135L141 180H163L170 144L177 180H199L195 135Z" fill="#3a5143"/><path d="M112 68H228 M100 184H240" stroke="#39885e" stroke-dasharray="5 4"/><path d="M170 13V190" stroke="#39885e" opacity=".3"/>',
+          objects: [
+            { type: "detail", x: 9, y: 9, w: 82, h: 82, label: "질감" },
+          ],
+          lines:
+            '<path d="M25 34V25H34 M66 25H75V34 M25 66V75H34 M66 75H75V66 M46 50H54 M50 46V54"/>',
+          labels: [["이 부분에 초점", 50, 83]],
         },
       };
+      function objectTransform(o) {
+        return o.rotate
+          ? `transform="rotate(${o.rotate} ${o.x + o.w / 2} ${o.y + o.h / 2})"`
+          : "";
+      }
+      function objectArt(o) {
+        const { x, y, w, h, type } = o;
+        let shape = "";
+        if (type === "bottle")
+          shape = `<ellipse cx="${x + w * 0.55}" cy="${y + h}" rx="${w * 0.56}" ry="${h * 0.07}" fill="#263e2a" opacity=".13"/><rect x="${x + w * 0.19}" y="${y}" width="${w * 0.62}" height="${h * 0.19}" rx="1.3" fill="#233e33"/><path d="M${x + w * 0.19} ${y + h * 0.18}Q${x} ${y + h * 0.22} ${x} ${y + h * 0.33}V${y + h * 0.92}Q${x} ${y + h} ${x + w * 0.12} ${y + h}H${x + w * 0.88}Q${x + w} ${y + h} ${x + w} ${y + h * 0.92}V${y + h * 0.33}Q${x + w} ${y + h * 0.22} ${x + w * 0.81} ${y + h * 0.18}Z" fill="url(#bottleFill)"/><rect x="${x + w * 0.1}" y="${y + h * 0.43}" width="${w * 0.8}" height="${h * 0.34}" rx=".8" fill="#f7f0dc"/><text x="${x + w * 0.5}" y="${y + h * 0.56}" text-anchor="middle" font-size="${w * 0.14}" fill="#355243" font-family="Georgia,serif">BOTANIC</text><path d="M${x + w * 0.25} ${y + h * 0.65}H${x + w * 0.75}" stroke="#b4ba9e" stroke-width=".5"/>`;
+        else if (type === "jar")
+          shape = `<ellipse cx="${x + w * 0.53}" cy="${y + h}" rx="${w * 0.57}" ry="${h * 0.14}" fill="#263e2a" opacity=".13"/><rect x="${x}" y="${y + h * 0.12}" width="${w}" height="${h * 0.85}" rx="2" fill="#e9c69b"/><rect x="${x}" y="${y}" width="${w}" height="${h * 0.25}" rx="1" fill="#355243"/><path d="M${x + w * 0.2} ${y + h * 0.57}H${x + w * 0.8}" stroke="#fcf5e3" stroke-width="1.6"/>`;
+        else if (type === "box")
+          shape = `<rect x="${x + 1}" y="${y + 1}" width="${w}" height="${h}" rx="1" fill="#263e2a" opacity=".13"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1" fill="#d3b58d"/><path d="M${x} ${y + h * 0.22}H${x + w} M${x + w * 0.5} ${y}V${y + h * 0.22}" fill="none" stroke="#b5946b" stroke-width=".5"/><rect x="${x + w * 0.18}" y="${y + h * 0.4}" width="${w * 0.64}" height="${h * 0.36}" fill="#f7efdc"/><text x="${x + w * 0.5}" y="${y + h * 0.61}" text-anchor="middle" font-family="Georgia,serif" font-size="${w * 0.13}" fill="#53664d">BOTANIC</text>`;
+        else if (type === "book")
+          shape = `<rect x="${x + 1}" y="${y + 1}" width="${w}" height="${h}" rx="1" fill="#e6dfcc"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1" fill="#bbbc9e"/><path d="M${x + w * 0.1} ${y}V${y + h}" stroke="#939c82" stroke-width=".6"/><text x="${x + w * 0.55}" y="${y + h * 0.4}" text-anchor="middle" font-family="Georgia,serif" font-size="4" fill="#fff9e8">NOTES</text>`;
+        else
+          shape = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="url(#bottleFill)"/><path d="M${x + 8} ${y + 8}V${y + h - 8} M${x + 11} ${y + 8}V${y + h - 8}" stroke="#a8c3a1" opacity=".4" stroke-width=".7"/><rect x="${x + w * 0.12}" y="${y + h * 0.23}" width="${w * 0.76}" height="${h * 0.55}" rx="1" fill="#f5ecd4"/><text x="50" y="46" text-anchor="middle" font-size="8" font-family="Georgia,serif" fill="#355243">BOTANIC</text><text x="50" y="55" text-anchor="middle" font-size="2.8" letter-spacing="1" fill="#71816b">DAILY ESSENTIALS</text><path d="M31 63H69 M37 66H63" stroke="#b6b99d" stroke-width=".6"/>`;
+        return `<g ${objectTransform(o)}>${shape}</g>`;
+      }
+      function sceneArt(key) {
+        return `<rect width="100" height="100" fill="#eae7dc"/><path d="M0 0H100L0 80Z" fill="#fbf8ec" opacity=".7"/><path d="M0 83H100" stroke="#d1d3be" stroke-width=".4"/>${THEMES[key].objects.map(objectArt).join("")}`;
+      }
+      function sceneGuides(key) {
+        const t = THEMES[key];
+        return `<g fill="none" stroke="#baf4d2" stroke-width=".5" stroke-dasharray="2 1.5">${t.objects.map((o) => `<rect x="${o.x}" y="${o.y}" width="${o.w}" height="${o.h}" rx="1.5" ${objectTransform(o)}/>`).join("")}<g opacity=".6" stroke-width=".3">${t.lines}</g></g>${t.labels.map(([text, x, y]) => `<text x="${x}" y="${y}" text-anchor="middle" font-size="3" fill="#edfff2" stroke="#10251a" stroke-width=".7" paint-order="stroke" font-family="sans-serif">${text}</text>`).join("")}`;
+      }
+      let sceneId = 0;
+      function sceneSVG(key, withGuides = false) {
+        const gradientId = `bottleFill-${++sceneId}`;
+        return `<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${gradientId}"><stop stop-color="#92aa7b"/><stop offset=".42" stop-color="#789568"/><stop offset="1" stop-color="#4a6d50"/></linearGradient></defs>${sceneArt(key).replaceAll("url(#bottleFill)", `url(#${gradientId})`)}${withGuides ? sceneGuides(key) : ""}</svg>`;
+      }
+      const PRESETS = Object.fromEntries(
+        Object.entries(THEMES).map(([key, theme]) => [
+          key,
+          { tip: theme.tip, render: () => sceneGuides(key) },
+        ]),
+      );
+
       const $ = (id) => document.getElementById(id);
-      let currentPreset = "topview",
-        examplePreset = "topview",
+      let currentPreset = "center",
+        examplePreset = "center",
         currentStream = null,
         actualFacing = "environment",
         facingMode = "environment";
@@ -692,7 +1067,17 @@
         const button = document.createElement("button");
         button.type = "button";
         button.className = "preset-chip";
-        button.textContent = `${THEMES[key].icon} ${THEMES[key].name}`;
+        if (example) {
+          button.classList.add("theme-card");
+          const thumb = document.createElement("span");
+          thumb.className = "theme-thumb";
+          thumb.innerHTML = sceneSVG(key);
+          const name = document.createElement("strong");
+          name.textContent = THEMES[key].name;
+          const tag = document.createElement("small");
+          tag.textContent = THEMES[key].tag;
+          button.append(thumb, name, tag);
+        } else button.textContent = `${THEMES[key].icon} ${THEMES[key].name}`;
         button.dataset.preset = key;
         button.addEventListener("click", () =>
           example ? showExample(key) : setPreset(key),
@@ -707,6 +1092,7 @@
         if (!PRESETS[key]) return;
         currentPreset = key;
         $("presetLayer").innerHTML = PRESETS[key].render();
+        $("referenceOverlay").innerHTML = sceneSVG(key);
         $("guideTip").textContent = PRESETS[key].tip;
         document.querySelectorAll("#presetScroll button").forEach((button) => {
           const selected = button.dataset.preset === key;
@@ -718,11 +1104,17 @@
         examplePreset = key;
         const theme = THEMES[key];
         $("exampleName").textContent = theme.name;
-        $("exampleArt").innerHTML =
-          `<svg viewBox="0 0 340 200" role="img" aria-label="${theme.name} 구도 예시"><rect width="340" height="200" fill="#e7eee3"/>${theme.art}</svg>`;
-        $("exampleArt")
-          .querySelector("svg")
-          .setAttribute("aria-label", theme.name + " 구도 예시");
+        $("exampleArt").innerHTML = sceneSVG(
+          key,
+          $("exampleGuideToggle").checked,
+        );
+        $("exampleArt").setAttribute("role", "img");
+        $("exampleArt").setAttribute(
+          "aria-label",
+          theme.name + " 촬영 배치 예시",
+        );
+        $("exampleAngle").textContent = "촬영 위치 · " + theme.angle;
+        $("exampleLight").textContent = "빛 · " + theme.light;
         $("exampleTips").replaceChildren(
           ...theme.tips.map((t) => {
             const li = document.createElement("li");
@@ -757,6 +1149,51 @@
         $("baseGrid").style.display = show ? "" : "none";
         $("gridToggleBtn").setAttribute("aria-pressed", String(show));
       });
+
+      let selectedRatio = 0.75;
+      let guideMode = "lines";
+      function fitCameraFrame() {
+        const stage = $("cameraStage").getBoundingClientRect();
+        if (!stage.width || !stage.height) return;
+        const width = Math.min(stage.width, stage.height * selectedRatio);
+        $("cameraFrame").style.width = width + "px";
+        $("cameraFrame").style.height = width / selectedRatio + "px";
+      }
+      function setRatio(value) {
+        selectedRatio = Number(value);
+        document.documentElement.style.setProperty(
+          "--photo-ratio",
+          String(selectedRatio),
+        );
+        fitCameraFrame();
+      }
+      $("ratioSelect").addEventListener("change", (event) =>
+        setRatio(event.target.value),
+      );
+      if (typeof ResizeObserver !== "undefined")
+        new ResizeObserver(fitCameraFrame).observe($("cameraStage"));
+      window.addEventListener("resize", fitCameraFrame);
+      setRatio($("ratioSelect").value);
+      document.querySelectorAll("[data-guide]").forEach((button) =>
+        button.addEventListener("click", () => {
+          guideMode = button.dataset.guide;
+          $("presetLayer").style.display = guideMode === "off" ? "none" : "";
+          $("referenceOverlay").hidden = guideMode !== "example";
+          $("opacityLabel").hidden = guideMode !== "example";
+          document
+            .querySelectorAll("[data-guide]")
+            .forEach((b) =>
+              b.setAttribute("aria-pressed", String(b === button)),
+            );
+        }),
+      );
+      $("guideOpacity").addEventListener("input", () => {
+        $("referenceOverlay").style.opacity =
+          Number($("guideOpacity").value) / 100;
+      });
+      $("exampleGuideToggle").addEventListener("change", () =>
+        showExample(examplePreset),
+      );
 
       function openDB() {
         if (!dbPromise)
@@ -1154,7 +1591,7 @@
           refreshShutter();
         }
       });
-      setPreset("topview");
+      setPreset("center");
     </script>
   </body>
 </html>
